@@ -1,7 +1,7 @@
 
 The OUUTags plugin for Unreal Engine is licensed under the MIT license.
 You are invited to create pull-requests to the github source for any additions or modifications you make to the plugin:
-https://github.com/JonasReich/OpenUnrealUtilities
+https://github.com/JonasReich/OUUTags
 
 ----
 
