@@ -1,11 +1,13 @@
 # Open Unreal Utiltiies - Gameplay Tags
 
-Various gameplay tag extensions for Unreal Engine 5:
+Various extensions to [Gameplay Tags](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-gameplay-tags-in-unreal-engine?application_version=5.2) in Unreal Engine 5.
 
-- Literal Tags: Native tag declarations as C++ structs that allow auto completion, etc instead of relying on string literals
-- Typed Tags: Typesafe gameplay tags and tag containers for properties
+- Literal Tags: Declare C++ structs instead of relying on string literals when using tags in source code
+- Typed Tags: Typesafe gameplay tags and tag containers for editor properties
 - Tag Query Parser: Parse gameplay tag queries from simple input strings (for debug tools etc)
 - Tag Dependencies: Link tag providers together to form a dependency hierarchy
+- Tag Audits: Analyze Tag Usages to find unused tags and most commonly used tags in your tag hierarchy
+- Tag Validation: Enforce rules for tag creation to maintain a clean tag tree
 
 ## Blog
 
