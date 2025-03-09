@@ -1,5 +1,5 @@
 
-The Open Unreal Utilities plugin for Unreal Engine is licensed under the MIT license.
+The OUUTags plugin for Unreal Engine is licensed under the MIT license.
 You are invited to create pull-requests to the github source for any additions or modifications you make to the plugin:
 https://github.com/JonasReich/OpenUnrealUtilities
 
@@ -7,7 +7,7 @@ https://github.com/JonasReich/OpenUnrealUtilities
 
 MIT License
 
-Copyright (c) 2023 Jonas Reich & Contributors (see CREDITS.md)
+Copyright (c) 2025 Jonas Reich & Contributors (see CREDITS.md)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
