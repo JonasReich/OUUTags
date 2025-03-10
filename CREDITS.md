@@ -8,6 +8,7 @@ This library was initially developed by Jonas Reich with significant help by the
 
 Many thanks to our colleagues at
 
+- Aesir Interactive
 - Grimlore Games
 
 and any anonymous contributors!
