@@ -10,5 +10,6 @@ Many thanks to our colleagues at
 
 - Aesir Interactive
 - Grimlore Games
+- Black Forest Games
 
 and any anonymous contributors!
