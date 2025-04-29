@@ -285,13 +285,15 @@ bool UOUUGameplayTagValidator::ValidateTag(
 
 	if ((Settings.bAllowContentRootTags == false) && bTagIsRoot && (bTagIsNative == false))
 	{
-		AddIssue(FText::Format(
-			INVTEXT(
-				"{0}: Content tags are not permitted as root tags. Please declare it as a Native tag in C++ code or "
-				"enable {1}"),
-			FText::FromString(Tag.ToString()),
-			FText::FromString(PREPROCESSOR_TO_STRING(UGameplayTagValidationSettings::bAllowContentRootTags))));
-		return false;
+		if (!Settings.FindTagOverride(Tag))
+		{
+			AddIssue(FText::Format(
+				INVTEXT("{0}: Content tags are not permitted as root tags. Please declare it as a Native tag in C++ "
+						"code, enable {1} or add a validation override for this tag."),
+				FText::FromString(Tag.ToString()),
+				FText::FromString(PREPROCESSOR_TO_STRING(UGameplayTagValidationSettings::bAllowContentRootTags))));
+			return false;
+		}
 	}
 
 	auto ParentTagsAsContainer = Tag.GetGameplayTagParents();
