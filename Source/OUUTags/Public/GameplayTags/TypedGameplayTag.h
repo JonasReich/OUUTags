@@ -169,11 +169,23 @@ public:
 
 		if (VanillaTag.IsValid() && bChecked)
 		{
-			checkf(
-				VanillaTag == FGameplayTag::EmptyTag,
-				TEXT("Tag %s is not part of the list of valid root tags %s and also not a completely empty tag"),
-				*VanillaTag.ToString(),
-				*RootTags.ToString());
+			if (UGameplayTagsManager::Get().FindTagNode(VanillaTag))
+			{
+				checkf(
+					false,
+					TEXT("Tag %s is not part of the list of valid root tags %s."),
+					*VanillaTag.ToString(),
+					*RootTags.ToString());
+			}
+			else
+			{
+				UE_LOG(
+					LogOUUTags,
+					Warning,
+					TEXT("Tag %s was deleted and thus is not part of the list of valid root tags %s."),
+					*VanillaTag.ToString(),
+					*RootTags.ToString());
+			}
 		}
 		return FGameplayTag::EmptyTag;
 	}
