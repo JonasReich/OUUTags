@@ -18,7 +18,13 @@ public:
 	static FGameplayTag GetParentTag(const FGameplayTag& Tag);
 
 	UFUNCTION(BlueprintPure, Category = "OUU|Gameplay Tags")
-	static FGameplayTagContainer GetChildTags(const FGameplayTag& Tag);
+	static FGameplayTagContainer GetChildTags(const FGameplayTag& Tag, int32 MaxRelativeTagDepth = 0);
+
+	UFUNCTION(BlueprintPure, Category = "OUU|Gameplay Tags")
+	static TArray<FGameplayTag> GetAllTagsInContainer(const FGameplayTagContainer& TagContainer);
+
+	UFUNCTION(BlueprintPure, Category = "OUU|Gameplay Tags")
+	static FGameplayTagContainer CreateTagContainerFromArray(const TArray<FGameplayTag>& TagArray);
 
 	UFUNCTION(BlueprintPure, Category = "OUU|Gameplay Tags")
 	static int32 GetTagDepth(const FGameplayTag& Tag);

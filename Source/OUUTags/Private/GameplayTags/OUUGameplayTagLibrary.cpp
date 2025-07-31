@@ -9,9 +9,37 @@ FGameplayTag UOUUGameplayTagLibrary::GetParentTag(const FGameplayTag& Tag)
 	return UGameplayTagsManager::Get().RequestGameplayTagDirectParent(Tag);
 }
 
-FGameplayTagContainer UOUUGameplayTagLibrary::GetChildTags(const FGameplayTag& Tag)
+FGameplayTagContainer UOUUGameplayTagLibrary::GetChildTags(const FGameplayTag& Tag, int32 MaxRelativeTagDepth)
 {
-	return UGameplayTagsManager::Get().RequestGameplayTagChildren(Tag);
+	auto Children = UGameplayTagsManager::Get().RequestGameplayTagChildren(Tag);
+	if (MaxRelativeTagDepth <= 0)
+	{
+		return Children;
+	}
+
+	const auto RootDepth = GetTagDepth(Tag);
+	FGameplayTagContainer FilteredResult;
+	for (auto& ChildTag : Children)
+	{
+		const int32 RelativeChildDepth = GetTagDepth(ChildTag) - RootDepth;
+		if (RelativeChildDepth <= MaxRelativeTagDepth)
+		{
+			FilteredResult.AddTag(ChildTag);
+		}
+	}
+	return FilteredResult;
+}
+
+TArray<FGameplayTag> UOUUGameplayTagLibrary::GetAllTagsInContainer(const FGameplayTagContainer& TagContainer)
+{
+	TArray<FGameplayTag> Result;
+	TagContainer.GetGameplayTagArray(OUT Result);
+	return Result;
+}
+
+FGameplayTagContainer UOUUGameplayTagLibrary::CreateTagContainerFromArray(const TArray<FGameplayTag>& TagArray)
+{
+	return FGameplayTagContainer::CreateFromArray(TagArray);
 }
 
 int32 UOUUGameplayTagLibrary::GetTagDepth(const FGameplayTag& Tag)
