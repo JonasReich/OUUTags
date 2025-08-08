@@ -1,4 +1,4 @@
-# Open Unreal Utiltiies - Gameplay Tags
+# Open Unreal Utilities - Gameplay Tags
 
 Various extensions to [Gameplay Tags](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-gameplay-tags-in-unreal-engine?application_version=5.2) in Unreal Engine 5.
 
