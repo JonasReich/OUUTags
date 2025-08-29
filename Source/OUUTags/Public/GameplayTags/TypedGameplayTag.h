@@ -594,6 +594,11 @@ public:
 		GameplayTagContainerValue(Ref.Get())
 	{
 	}
+
+	using Super::Get;
+
+	FORCEINLINE FGameplayTagContainer&& Get() && { return MoveTemp(GameplayTagContainerValue); }
+
 	// auto conversion to ref type
 	operator TTypedGameplayTagContainerReference<BlueprintTagType>() const
 	{
