@@ -19,7 +19,7 @@ FGameplayTagContainer TagContainerFromStrings(std::initializer_list<FString> Tag
 BEGIN_DEFINE_SPEC(
 	FGameplayTagQueryParserSpec,
 	"OpenUnrealUtilities.Runtime.GameplayTags.GameplayTagQueryParser",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 END_DEFINE_SPEC(FGameplayTagQueryParserSpec)
 
 void FGameplayTagQueryParserSpec::Define()

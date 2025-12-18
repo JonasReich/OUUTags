@@ -19,7 +19,7 @@ static_assert(
 BEGIN_DEFINE_SPEC(
 	FTypedGameplayTagSpec,
 	"OpenUnrealUtilities.Runtime.GameplayTags.TypedGameplayTag",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 END_DEFINE_SPEC(FTypedGameplayTagSpec)
 
 void FTypedGameplayTagSpec::Define()

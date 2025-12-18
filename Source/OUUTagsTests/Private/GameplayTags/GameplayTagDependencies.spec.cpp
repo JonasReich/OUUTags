@@ -10,7 +10,7 @@
 BEGIN_DEFINE_SPEC(
 	FTagDependenciesSpec,
 	"OpenUnrealUtilities.Runtime.GameplayTags.TagDependencies",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 	UGameplayTagDependency_TestObject* ObjectA;
 	UGameplayTagDependency_TestObject* ObjectB; // depends on A
 	UGameplayTagDependency_TestObject* ObjectB2;

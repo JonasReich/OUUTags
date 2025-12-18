@@ -23,7 +23,7 @@ static_assert(
 BEGIN_DEFINE_SPEC(
 	FLiteralGameplayTagSpec,
 	"OpenUnrealUtilities.Runtime.GameplayTags.LiteralGameplayTag",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 END_DEFINE_SPEC(FLiteralGameplayTagSpec)
 
 void FLiteralGameplayTagSpec::Define()

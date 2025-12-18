@@ -54,7 +54,7 @@ FGameplayTag UOUUGameplayTagLibrary::GetTagUntilDepth(const FGameplayTag& Tag, i
 	{
 		return FGameplayTag::EmptyTag;
 	}
-	Names.SetNum(Depth, true);
+	Names.SetNum(Depth, EAllowShrinking::No);
 	return CreateTagFromComponents(Names);
 }
 
