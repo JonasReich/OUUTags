@@ -111,35 +111,18 @@ enum class ELiteralGameplayTagFlags
 
 	// Recommended default tags for most use-cases
 	Default = (AutoRegister),
-
-	// For backwards compatibility: true and false in macros should be converted to these bitmasks respectively:
-	Legacy_True = Default,
-	Legacy_False = None
 };
 
 ENUM_CLASS_FLAGS(ELiteralGameplayTagFlags)
 
-constexpr ELiteralGameplayTagFlags AutoConvertLiteralGameplayTagFlags(ELiteralGameplayTagFlags Flags)
-{
-	return Flags;
-}
-
-UE_DEPRECATED(
-	5.2,
-	"Using bool in literal gameplay tag declarations is deprecated. Please use ELiteralGameplayTagFlags instead.")
-constexpr ELiteralGameplayTagFlags AutoConvertLiteralGameplayTagFlags(bool bInAutoAddNativeTag)
-{
-	return bInAutoAddNativeTag ? ELiteralGameplayTagFlags::Legacy_True : ELiteralGameplayTagFlags::Legacy_False;
-}
-
 // Use this like so in macros: ResolveFallbackFlags(Fallback, ##__VA_ARGS__)
-// If no VA_ARGS are passed, the compiler uses the somgöe parameter version below.
+// If no VA_ARGS are passed, the compiler uses the single parameter version below.
 // Otherwise it uses this version, which invokes one of the funcs above with the SECOND parameter, which needs to be the
 // explicit flags.
 template <typename T, typename U>
 constexpr ELiteralGameplayTagFlags ResolveFallbackFlags(T ImplicitFallbackFlags, U ExplicitFlags)
 {
-	return (AutoConvertLiteralGameplayTagFlags(ExplicitFlags)
+	return (ExplicitFlags
 			// Guaranteed explicit flags
 			| ELiteralGameplayTagFlags::Explicit)
 		// -> Guaranteed not inherited
@@ -149,14 +132,12 @@ constexpr ELiteralGameplayTagFlags ResolveFallbackFlags(T ImplicitFallbackFlags,
 template <typename T>
 constexpr ELiteralGameplayTagFlags ResolveFallbackFlags(T ImplicitFallbackFlags)
 {
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	return AutoConvertLiteralGameplayTagFlags(ImplicitFallbackFlags)
+	return ImplicitFallbackFlags
 		// Guaranteed implicit flags -> not explicit
 		& (~ELiteralGameplayTagFlags::Explicit)
 		// Could be new (if on root level) or inherited.
 		// That's why we can't set Inherited here
 		;
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
 /**
@@ -309,7 +290,7 @@ bool operator==(const FGameplayTag& LHS, const TLiteralGameplayTag<SelfTagType, 
 	OUU_GTAG_GROUP_START_IMPL(                                                                                         \
 		TagType,                                                                                                       \
 		TagDescription,                                                                                                \
-		(ResolveFallbackFlags((ParentTagType::Flags | ELiteralGameplayTagFlags::Inherited)), ##__VA_ARGS__))
+		(ResolveFallbackFlags((ParentTagType::Flags | ELiteralGameplayTagFlags::Inherited), ##__VA_ARGS__)))
 
 /** Close a previously opened tag group. */
 // clang-format off
@@ -412,15 +393,6 @@ namespace OUUTags::Private
 // Test that ResolveFallbackFlags function works as expected
 namespace OUUTags::Private::ResolveFallbackFlagsTests
 {
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	static_assert(
-		ResolveFallbackFlags(true) == (ELiteralGameplayTagFlags::Legacy_True),
-		"true should be converted to Legacy_True");
-
-	static_assert(
-		ResolveFallbackFlags(false) == (ELiteralGameplayTagFlags::Legacy_False),
-		"false should be converted to Legacy_False");
-
 	static_assert(
 		ResolveFallbackFlags(ELiteralGameplayTagFlags::AllowContentChildTags)
 			== ELiteralGameplayTagFlags::AllowContentChildTags,
@@ -436,6 +408,22 @@ namespace OUUTags::Private::ResolveFallbackFlagsTests
 			== (ELiteralGameplayTagFlags::Default | ELiteralGameplayTagFlags::Inherited),
 		"Inherited tag should be kept");
 
+	constexpr ELiteralGameplayTagFlags ParentFlags =
+		(ELiteralGameplayTagFlags::AutoRegister | ELiteralGameplayTagFlags::Inherited);
+	constexpr ELiteralGameplayTagFlags OverridenInheritedFlags = ResolveFallbackFlags(
+		(ParentFlags | ELiteralGameplayTagFlags::Inherited), // doubly inherited (shouldn't make a difference, but this
+															 // is closest to the case that broke in TQ2)
+		(ParentFlags | ELiteralGameplayTagFlags::AllowContentChildTags));
+	static_assert(
+		static_cast<bool>(OverridenInheritedFlags & ELiteralGameplayTagFlags::AutoRegister),
+		"Overriden flags should keep AutoRegister which is inherited");
+	static_assert(
+		static_cast<bool>(OverridenInheritedFlags & ELiteralGameplayTagFlags::Inherited) == false,
+		"Inherited flag should be stripped out");
+	static_assert(
+		static_cast<bool>(OverridenInheritedFlags & ELiteralGameplayTagFlags::Explicit),
+		"Explicit flag should be added");
+
 	constexpr ELiteralGameplayTagFlags ActualFlags = ResolveFallbackFlags(
 		"this string should lead to a compile error if ever considered",
 		(ELiteralGameplayTagFlags::Default | ELiteralGameplayTagFlags::Inherited
@@ -443,5 +431,4 @@ namespace OUUTags::Private::ResolveFallbackFlagsTests
 	constexpr ELiteralGameplayTagFlags ExpectedFlags = ELiteralGameplayTagFlags::Default
 		| ELiteralGameplayTagFlags::AllowContentChildTags | ELiteralGameplayTagFlags::Explicit;
 	static_assert(ActualFlags == ExpectedFlags, "Inherited tag should be removed + Explicit should be added");
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 } // namespace OUUTags::Private::ResolveFallbackFlagsTests

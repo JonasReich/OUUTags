@@ -15,6 +15,7 @@ FAutoConsoleCommand GTagsValidateCommand{
 	TEXT("Run tags validation on all registered gameplay tags"),
 	FConsoleCommandDelegate::CreateLambda([]() { UGameplayTagValidatorSubsystem::Get().ValidateGameplayTagTree(); })};
 
+UE_DISABLE_OPTIMIZATION
 void UGameplayTagValidationSettings::RefreshNativeTagOverrides()
 {
 	NativeTagOverrides.Reset();
@@ -249,13 +250,18 @@ void UGameplayTagValidatorSubsystem::HandleGameplayTagTreeChanged()
 void UOUUGameplayTagValidator::InitializeValidator()
 {
 	AllNativeTags.Reset();
-
+	TArray<const FGameplayTagSource*> AllNativeTagSources;
 	const auto& TagsManager = UGameplayTagsManager::Get();
-	TArray<TSharedPtr<FGameplayTagNode>> NativeTagNodes;
-	TagsManager.GetAllTagsFromSource(FGameplayTagSource::GetNativeName(), OUT NativeTagNodes);
-	for (const auto NativeTagNode : NativeTagNodes)
+	TagsManager.FindTagSourcesWithType(EGameplayTagSourceType::Native, OUT AllNativeTagSources);
+
+	for (auto* Source : AllNativeTagSources)
 	{
-		AllNativeTags.AddTag(NativeTagNode->GetCompleteTag());
+		TArray<TSharedPtr<FGameplayTagNode>> NativeTagNodes;
+		TagsManager.GetAllTagsFromSource(Source->SourceName, OUT NativeTagNodes);
+		for (const auto NativeTagNode : NativeTagNodes)
+		{
+			AllNativeTags.AddTag(NativeTagNode->GetCompleteTag());
+		}
 	}
 }
 
@@ -376,19 +382,15 @@ bool UOUUGameplayTagValidator::ValidateTag(
 							FText::AsNumber(SettingsEntry->AllowedChildDepth)));
 						return false;
 					}
+
+					break;
 				}
 			}
 
-			if (AllNativeTags.HasTagExact(Parent))
+			if (FirstNativeTag.IsValid() == false && AllNativeTags.HasTagExact(Parent))
 			{
 				// Parent is Native
 				FirstNativeTag = Parent;
-
-				// Break at the first native tag.
-				// Native / Content can't be mixed.
-				// Only exception: We could encounter some implicit tags from native tags that are also declared
-				// explicitly in content. We ignore those tags for this check.
-				break;
 			}
 
 			NativeRelativeTagDepth += 1;
