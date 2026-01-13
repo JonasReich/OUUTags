@@ -15,7 +15,6 @@ FAutoConsoleCommand GTagsValidateCommand{
 	TEXT("Run tags validation on all registered gameplay tags"),
 	FConsoleCommandDelegate::CreateLambda([]() { UGameplayTagValidatorSubsystem::Get().ValidateGameplayTagTree(); })};
 
-UE_DISABLE_OPTIMIZATION
 void UGameplayTagValidationSettings::RefreshNativeTagOverrides()
 {
 	NativeTagOverrides.Reset();
