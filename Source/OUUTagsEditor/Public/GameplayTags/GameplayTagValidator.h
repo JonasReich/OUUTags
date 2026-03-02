@@ -7,6 +7,7 @@
 #include "EditorSubsystem.h"
 #include "Engine/DeveloperSettings.h"
 #include "GameplayTagContainer.h"
+#include "GameplayTagsManager.h"
 
 #include "GameplayTagValidator.generated.h"
 
