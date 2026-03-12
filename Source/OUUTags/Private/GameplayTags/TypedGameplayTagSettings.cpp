@@ -2,6 +2,7 @@
 
 #include "GameplayTags/TypedGameplayTagSettings.h"
 
+#include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTagsManager.h"
 #include "Misc/CoreDelegates.h"
 
@@ -41,7 +42,6 @@ void UTypedGameplayTagSettings::AddNativeRootTags(const FGameplayTagContainer& R
 }
 
 void UTypedGameplayTagSettings::GetAllRootTags(FGameplayTagContainer& OutRootTags, const UStruct* BlueprintStruct)
-
 {
 	GetAllRootTags(OutRootTags, BlueprintStruct->GetFName());
 }

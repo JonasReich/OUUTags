@@ -6,9 +6,11 @@
 
 #include "Engine/DeveloperSettings.h"
 #include "GameplayTagContainer.h"
+#include "OUUTagsUtil.h"
 
 #include "TypedGameplayTagSettings.generated.h"
 
+struct FTypedGameplayTag_Base;
 USTRUCT()
 struct FTypedGameplayTagSettingsEntry
 {
@@ -55,6 +57,11 @@ public:
 	static void GetAllLeafTags(FGameplayTagContainer& OutLeafTags, const UStruct* BlueprintStruct);
 
 #if WITH_EDITOR
+	template <typename T>
+	static FString GetFilterString();
+#endif
+
+#if WITH_EDITOR
 	/**
 	 * Clean up additional root tags that do not have a matching native root tag entry.
 	 * This removes old config entries that do not have a matching struct anymore, e.g. after a struct was deleted or
@@ -74,7 +81,6 @@ public:
 	// --
 #endif
 
-private:
 #if WITH_EDITOR
 	void UpdateCopyForUIFromSettings();
 	UFUNCTION()
@@ -126,3 +132,14 @@ bool UTypedGameplayTagSettings::ForEachAdditionalRootTag(const CallableT& Callab
 
 	return false;
 }
+
+#if WITH_EDITOR
+template <typename T>
+FString UTypedGameplayTagSettings::GetFilterString()
+{
+	static_assert(TIsDerivedFrom<T, FTypedGameplayTag_Base>::Value, "only valid with typed gameplay tags");
+	FGameplayTagContainer AllRootTags;
+	GetAllRootTags(OUT AllRootTags, T::StaticStruct());
+	return OUUTags::Util::MakeFilterStringFromContainer(AllRootTags);
+}
+#endif

@@ -6,6 +6,7 @@
 
 #include "Engine/DeveloperSettings.h"
 #include "GameplayTags/LiteralGameplayTag.h"
+#include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTags/TypedGameplayTagSettings.h"
 #include "Misc/CoreDelegates.h"
 
@@ -52,11 +53,6 @@ namespace OUUTags::Private
 			return false;
 		});
 	}
-
-#if WITH_EDITOR
-	OUUTAGS_API FString MakeFilterString(const FGameplayTagContainer& GameplayTags);
-#endif
-
 } // namespace OUUTags::Private
 
 // Forward declare the derived container types...
@@ -298,20 +294,6 @@ private:                                                                        
 			WithStructuredSerializeFromMismatchedTag = true,                                                           \
 			WithImportTextItem = true,                                                                                 \
 		};
-
-#if WITH_EDITOR
-	#define PRIVATE_TYPED_GAMEPLAY_TAG_EDITOR_IMPL(TagType)                                                            \
-		static void RegisterCustomProperyTypeLayout()                                                                  \
-		{                                                                                                              \
-			TypedTagImplType::RegisterPropertTypeLayout(PREPROCESSOR_TO_STRING(TagType));                              \
-		}                                                                                                              \
-		static void UnregisterCustomProperyTypeLayout()                                                                \
-		{                                                                                                              \
-			TypedTagImplType::UnregisterPropertTypeLayout(PREPROCESSOR_TO_STRING(TagType));                            \
-		}
-#else
-	#define PRIVATE_TYPED_GAMEPLAY_TAG_EDITOR_IMPL(TagName) PREPROCESSOR_NOTHING
-#endif
 
 #define DEFINE_TYPED_GAMEPLAY_TAG(TagType)                                                                             \
 	TagType::FAutoRegistrationHelper::FAutoRegistrationHelper()                                                        \
