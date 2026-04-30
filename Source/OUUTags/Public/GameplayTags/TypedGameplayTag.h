@@ -165,6 +165,7 @@ public:
 #if DO_CHECK
 		if (VanillaTag.IsValid() && bChecked)
 		{
+			ValueContainerType RootTags = GetAllRootTags();
 			if (UGameplayTagsManager::Get().FindTagNode(VanillaTag))
 			{
 				checkf(
