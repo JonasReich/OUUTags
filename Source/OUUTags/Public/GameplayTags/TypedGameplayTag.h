@@ -157,12 +157,12 @@ public:
 
 	static BlueprintTagType TryConvert(FGameplayTag VanillaTag, bool bChecked)
 	{
-		ValueContainerType RootTags = GetAllRootTags();
 		if (ForAllRootTags([&](const BlueprintTagType& RootTag) { return VanillaTag.MatchesTag(RootTag); }))
 		{
 			return BlueprintTagType(VanillaTag);
 		}
 
+#if DO_CHECK
 		if (VanillaTag.IsValid() && bChecked)
 		{
 			if (UGameplayTagsManager::Get().FindTagNode(VanillaTag))
@@ -171,7 +171,7 @@ public:
 					false,
 					TEXT("Tag %s is not part of the list of valid root tags %s."),
 					*VanillaTag.ToString(),
-					*RootTags.ToString());
+					*GetAllRootTags().ToString());
 			}
 			else
 			{
@@ -180,9 +180,10 @@ public:
 					Warning,
 					TEXT("Tag %s was deleted and thus is not part of the list of valid root tags %s."),
 					*VanillaTag.ToString(),
-					*RootTags.ToString());
+					*GetAllRootTags().ToString());
 			}
 		}
+#endif
 		return FGameplayTag::EmptyTag;
 	}
 };
