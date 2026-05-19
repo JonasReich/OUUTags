@@ -6,6 +6,26 @@
 #include "GameplayTagsManager.h"
 #include "Misc/CoreDelegates.h"
 
+bool UTypedGameplayTagSettings::IsDoneAddingTags()
+{
+#if WITH_EDITOR
+	return false;
+#else
+	static bool bDoneAddingNativeTags = false;
+
+	static bool bOnDoneAddingNativeTagsRegistered = false;
+	if (bOnDoneAddingNativeTagsRegistered == false)
+	{
+		bOnDoneAddingNativeTagsRegistered = true;
+
+		UGameplayTagsManager::Get().CallOrRegister_OnDoneAddingNativeTagsDelegate(
+			FSimpleDelegate::CreateLambda([&]() { bDoneAddingNativeTags = true; }));
+	}
+
+	return bDoneAddingNativeTags;
+#endif
+}
+
 void UTypedGameplayTagSettings::GetAdditionalRootTags(
 	FGameplayTagContainer& OutRootTags,
 	const UStruct* BlueprintStruct)

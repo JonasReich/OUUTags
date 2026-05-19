@@ -44,6 +44,10 @@ class OUUTAGS_API UTypedGameplayTagSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	// Check if we can assume that all tags have finished registering at this point.
+	// In a cooked build, this is true after we are done adding native tags. In the editor, this will always return
+	// false.
+	static bool IsDoneAddingTags();
 	static void GetAdditionalRootTags(FGameplayTagContainer& OutRootTags, const UStruct* BlueprintStruct);
 	static void GetAdditionalRootTags(FGameplayTagContainer& OutRootTags, const FName& BlueprintStructName);
 	template <typename CallableT>
