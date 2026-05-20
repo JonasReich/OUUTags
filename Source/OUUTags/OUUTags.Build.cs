@@ -22,10 +22,6 @@ public class OUUTags : ModuleRules
 			"DeveloperSettings"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[]
-		{
-		});
-
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("GameplayTagsEditor");
