@@ -237,7 +237,7 @@ bool operator==(const FGameplayTag& LHS, const TLiteralGameplayTag<SelfTagType, 
  */
 #define OUU_DECLARE_GAMEPLAY_TAGS_EXTENSION_START(MODULE_API, TagType, TagTypeToExtend)                                \
 	struct TagType;                                                                                                    \
-	extern TagType TagType##_Instance;                                                                                 \
+	extern MODULE_API TagType TagType##_Instance;                                                                                 \
 	struct MODULE_API TagType : public TLiteralGameplayTag<TagType, TagType, TagType>                                  \
 	{                                                                                                                  \
 		using EFlags = ELiteralGameplayTagFlags;                                                                       \
