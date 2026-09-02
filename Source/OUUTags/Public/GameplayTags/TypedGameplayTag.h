@@ -184,6 +184,11 @@ public:
 
 	static BlueprintTagType TryConvert(FGameplayTag VanillaTag, bool bChecked)
 	{
+		if (VanillaTag.IsValid() == false)
+		{
+			return FGameplayTag::EmptyTag;
+		}
+
 		if (ForAllRootTags([&](const BlueprintTagType& RootTag) { return VanillaTag.MatchesTag(RootTag); }))
 		{
 			return BlueprintTagType(VanillaTag);
