@@ -426,7 +426,7 @@ struct TTypedGameplayTagContainer_Base
 {
 public:
 	using BlueprintTagType = InBlueprintTagType;
-	using TypedTagImplType = typename BlueprintTagType::TypedTagImplType;
+	using TypedTagImplType = BlueprintTagType::TypedTagImplType;
 
 	using ValueContainerType = TTypedGameplayTagContainerValue<BlueprintTagType>;
 	using ReferenceContainerType = TTypedGameplayTagContainerReference<BlueprintTagType>;

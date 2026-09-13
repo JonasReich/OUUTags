@@ -110,7 +110,7 @@ void UGameplayTagValidatorSubsystem::ValidateGameplayTagTree()
 	TArray<FText> Warnings, Errors;
 	ValidationContext.SplitIssues(OUT Warnings, OUT Errors);
 
-	const auto MessageLogName = TEXT("GameplayTagValidation");
+	constexpr auto MessageLogName = TEXT("GameplayTagValidation");
 	auto MessageLog = FMessageLog(MessageLogName);
 	MessageLog.NewPage(INVTEXT("Gameplay Tag Validation"));
 
