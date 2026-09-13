@@ -34,6 +34,8 @@ namespace OUUTags::Private
 struct FOUUGameplayTagCollection
 {
 public:
+	virtual ~FOUUGameplayTagCollection() = default;
+
 	virtual bool IsEmpty() const = 0;
 	virtual bool HasTag(const FGameplayTag& TagToCheck) const = 0;
 	virtual bool HasTagExact(const FGameplayTag& TagToCheck) const = 0;
