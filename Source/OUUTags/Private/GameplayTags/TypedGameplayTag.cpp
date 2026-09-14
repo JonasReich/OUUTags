@@ -5,7 +5,6 @@
 #include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTagsManager.h"
 #include "LogOUUTags.h"
-#include "Misc/EngineVersionComparison.h"
 #include "Modules/ModuleManager.h"
 #include "UObject/UObjectIterator.h"
 

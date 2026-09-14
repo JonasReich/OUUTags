@@ -2,7 +2,6 @@
 
 #include "GameplayTags/TypedGameplayTagSettings.h"
 
-#include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTagsManager.h"
 #include "Misc/CoreDelegates.h"
 
