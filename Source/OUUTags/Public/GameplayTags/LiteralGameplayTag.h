@@ -52,13 +52,13 @@ namespace OUUTags::Private
 	template <typename ChildTagType>
 	struct TParentOrExtendedTag<ChildTagType, true>
 	{
-		using Type = typename ChildTagType::ExtendTagType;
+		using Type = ChildTagType::ExtendTagType;
 	};
 
 	template <typename ChildTagType>
 	struct TParentOrExtendedTag<ChildTagType, false>
 	{
-		using Type = typename ChildTagType::ParentTagType;
+		using Type = ChildTagType::ParentTagType;
 	};
 
 	/**
@@ -75,7 +75,7 @@ namespace OUUTags::Private
 template <typename Child, typename TestParent>
 struct TIsChildTagOf_Single
 {
-	using ParentOrExtendedTag = typename OUUTags::Private::TParentOrExtendedTag<Child>::Type;
+	using ParentOrExtendedTag = OUUTags::Private::TParentOrExtendedTag<Child>::Type;
 
 	static constexpr bool Value =
 		TOr<OUUTags::Private::TIsSameWrapper<typename Child::SelfTagType, TestParent>,

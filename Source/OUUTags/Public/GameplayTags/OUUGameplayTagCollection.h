@@ -12,15 +12,19 @@ struct FGameplayTagContainer;
 
 namespace OUUTags::Private
 {
-template <typename T>
-void GetUnderlyingTagTypeHelper();
-template <typename T>
-requires(UE::CConvertibleTo<const T&, const FGameplayTag&>) FGameplayTag GetUnderlyingTagTypeHelper();
-template <typename T>
-requires(UE::CConvertibleTo<const T&, const FGameplayTagContainer&>) FGameplayTagContainer GetUnderlyingTagTypeHelper();
+	// ReSharper disable CppFunctionIsNotImplemented
+	template <typename T>
+	void GetUnderlyingTagTypeHelper();
+	template <typename T>
+	requires(UE::CConvertibleTo<const T&, const FGameplayTag&>) FGameplayTag GetUnderlyingTagTypeHelper();
+	template <typename T>
+	requires(UE::CConvertibleTo<const T&, const FGameplayTagContainer&>) FGameplayTagContainer
+		GetUnderlyingTagTypeHelper();
 
-template <typename T>
-using TUnderlyingTagType = decltype(GetUnderlyingTagTypeHelper<T>());
+	template <typename T>
+	using TUnderlyingTagType = decltype(GetUnderlyingTagTypeHelper<T>());
+
+	// ReSharper restore CppFunctionIsNotImplemented
 } // namespace OUUTags::Private
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,6 +34,8 @@ using TUnderlyingTagType = decltype(GetUnderlyingTagTypeHelper<T>());
 struct FOUUGameplayTagCollection
 {
 public:
+	virtual ~FOUUGameplayTagCollection() = default;
+
 	virtual bool IsEmpty() const = 0;
 	virtual bool HasTag(const FGameplayTag& TagToCheck) const = 0;
 	virtual bool HasTagExact(const FGameplayTag& TagToCheck) const = 0;
@@ -56,9 +62,10 @@ public:
 template <typename... TagTs>
 struct TOUUGameplayTagCollectionBase : public FOUUGameplayTagCollection
 {
-	static_assert(sizeof...(TagTs) == 0,
-				  TEXT("If this triggers, you tried to pass something to this collection which is neither a gameplay "
-					   "tag nor a gameplay tag container."));
+	static_assert(
+		sizeof...(TagTs) == 0,
+		TEXT("If this triggers, you tried to pass something to this collection which is neither a gameplay "
+			 "tag nor a gameplay tag container."));
 
 public:
 	TOUUGameplayTagCollectionBase() = default;
@@ -144,9 +151,8 @@ private:
 template <typename... TagTs>
 FORCEINLINE TOUUGameplayTagCollectionBase<FGameplayTag, TagTs...>::TOUUGameplayTagCollectionBase(
 	const FGameplayTag& InTag,
-	const TagTs&... Tags)
-	: Super(Tags...)
-	, Tag(InTag)
+	const TagTs&... Tags) :
+	Super(Tags...), Tag(InTag)
 {
 }
 template <typename... TagTs>
@@ -156,7 +162,8 @@ FORCEINLINE bool TOUUGameplayTagCollectionBase<FGameplayTag, TagTs...>::Collecti
 	return Tag.MatchesTagExact(InTag) || Super::CollectionHasExactTag(InTag);
 }
 template <typename... TagTs>
-FORCEINLINE bool TOUUGameplayTagCollectionBase<FGameplayTag, TagTs...>::CollectionHasTag(const FGameplayTag& InTag) const
+FORCEINLINE bool TOUUGameplayTagCollectionBase<FGameplayTag, TagTs...>::CollectionHasTag(
+	const FGameplayTag& InTag) const
 {
 	return Tag.MatchesTag(InTag) || Super::CollectionHasTag(InTag);
 }
@@ -223,9 +230,8 @@ private:
 template <typename... TagTs>
 FORCEINLINE TOUUGameplayTagCollectionBase<FGameplayTagContainer, TagTs...>::TOUUGameplayTagCollectionBase(
 	const FGameplayTagContainer& InContainer,
-	const TagTs&... Tags)
-	: Super(Tags...)
-	, Container(InContainer)
+	const TagTs&... Tags) :
+	Super(Tags...), Container(InContainer)
 {
 }
 template <typename... TagTs>
@@ -294,8 +300,7 @@ FORCEINLINE void TOUUGameplayTagCollectionBase<FGameplayTagContainer, TagTs...>:
 //		// ...
 //	}
 template <typename... TagTs>
-struct TOUUGameplayTagCollection
-	: public TOUUGameplayTagCollectionBase<OUUTags::Private::TUnderlyingTagType<TagTs>...>
+struct TOUUGameplayTagCollection : public TOUUGameplayTagCollectionBase<OUUTags::Private::TUnderlyingTagType<TagTs>...>
 {
 public:
 	using Super = TOUUGameplayTagCollectionBase<OUUTags::Private::TUnderlyingTagType<TagTs>...>;
@@ -331,8 +336,7 @@ public:
 };
 
 template <typename... TagTs>
-FORCEINLINE TOUUGameplayTagCollection<TagTs...>::TOUUGameplayTagCollection(const TagTs&... Tags)
-	: Super(Tags...)
+FORCEINLINE TOUUGameplayTagCollection<TagTs...>::TOUUGameplayTagCollection(const TagTs&... Tags) : Super(Tags...)
 {
 }
 template <typename... TagTs>
@@ -354,9 +358,8 @@ template <typename... OtherTagTs>
 FORCEINLINE bool TOUUGameplayTagCollection<TagTs...>::HasAll(
 	const TOUUGameplayTagCollection<OtherTagTs...>& CollectionToCheck) const
 {
-	return CollectionToCheck.ForEachTag([&](const FGameplayTag& Tag) {
-		return Super::CollectionHasTag(Tag) == false;
-	}) == false;
+	return CollectionToCheck.ForEachTag([&](const FGameplayTag& Tag) { return Super::CollectionHasTag(Tag) == false; })
+		== false;
 }
 template <typename... TagTs>
 template <typename... OtherTagTs>
@@ -455,15 +458,14 @@ template <typename... TagTs>
 FORCEINLINE bool TOUUGameplayTagCollection<TagTs...>::ContainerHasAllTagsInCollection(
 	const FGameplayTagContainer& ContainerToCheck) const
 {
-	return Super::ForEachTag([&](const FGameplayTag& Tag) { return ContainerToCheck.HasTag(Tag) == false; })
-		   == false;
+	return Super::ForEachTag([&](const FGameplayTag& Tag) { return ContainerToCheck.HasTag(Tag) == false; }) == false;
 }
 template <typename... TagTs>
 FORCEINLINE bool TOUUGameplayTagCollection<TagTs...>::ContainerHasAllTagsInCollectionExact(
 	const FGameplayTagContainer& ContainerToCheck) const
 {
 	return Super::ForEachTag([&](const FGameplayTag& Tag) { return ContainerToCheck.HasTagExact(Tag) == false; })
-		   == false;
+		== false;
 }
 template <typename... TagTs>
 FORCEINLINE FGameplayTagContainer TOUUGameplayTagCollection<TagTs...>::ToContainer() const
