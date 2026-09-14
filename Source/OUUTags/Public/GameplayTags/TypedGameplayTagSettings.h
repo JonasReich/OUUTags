@@ -6,9 +6,11 @@
 
 #include "Engine/DeveloperSettings.h"
 #include "GameplayTagContainer.h"
+#include "OUUTagsUtil.h"
 
 #include "TypedGameplayTagSettings.generated.h"
 
+struct FTypedGameplayTag_Base;
 USTRUCT()
 struct FTypedGameplayTagSettingsEntry
 {
@@ -42,6 +44,10 @@ class OUUTAGS_API UTypedGameplayTagSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	// Check if we can assume that all tags have finished registering at this point.
+	// In a cooked build, this is true after we are done adding native tags. In the editor, this will always return
+	// false.
+	static bool IsDoneAddingTags();
 	static void GetAdditionalRootTags(FGameplayTagContainer& OutRootTags, const UStruct* BlueprintStruct);
 	static void GetAdditionalRootTags(FGameplayTagContainer& OutRootTags, const FName& BlueprintStructName);
 	template <typename CallableT>
@@ -53,6 +59,11 @@ public:
 	static void GetAllRootTags(FGameplayTagContainer& OutRootTags, const FName& BlueprintStructName);
 	// Get all leaf tags (tags without children) for the given typed gameplay tag
 	static void GetAllLeafTags(FGameplayTagContainer& OutLeafTags, const UStruct* BlueprintStruct);
+
+#if WITH_EDITOR
+	template <typename T>
+	static FString GetFilterString();
+#endif
 
 #if WITH_EDITOR
 	/**
@@ -74,7 +85,6 @@ public:
 	// --
 #endif
 
-private:
 #if WITH_EDITOR
 	void UpdateCopyForUIFromSettings();
 	UFUNCTION()
@@ -126,3 +136,14 @@ bool UTypedGameplayTagSettings::ForEachAdditionalRootTag(const CallableT& Callab
 
 	return false;
 }
+
+#if WITH_EDITOR
+template <typename T>
+FString UTypedGameplayTagSettings::GetFilterString()
+{
+	static_assert(TIsDerivedFrom<T, FTypedGameplayTag_Base>::Value, "only valid with typed gameplay tags");
+	FGameplayTagContainer AllRootTags;
+	GetAllRootTags(OUT AllRootTags, T::StaticStruct());
+	return OUUTags::Util::MakeFilterStringFromContainer(AllRootTags);
+}
+#endif

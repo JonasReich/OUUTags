@@ -193,7 +193,7 @@ void FTypedGameplayTagContainer_PropertyTypeCustomization::RefreshContainerWidge
 			}
 		}
 
-		const FString FilterString = OUUTags::Private::MakeFilterString(Container->CachedFilterTags);
+		const FString FilterString = OUUTags::Util::MakeFilterStringFromContainer(Container->CachedFilterTags);
 		const auto GameplayTagContainerWidget = IGameplayTagsEditorModule::Get().MakeGameplayTagContainerWidget(
 			FOnSetGameplayTagContainer::CreateLambda(
 				[this](const FGameplayTagContainer& NewValue) { SetNewTags(NewValue); }),

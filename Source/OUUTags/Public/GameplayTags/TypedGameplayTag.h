@@ -6,6 +6,7 @@
 
 #include "Engine/DeveloperSettings.h"
 #include "GameplayTags/LiteralGameplayTag.h"
+#include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTags/TypedGameplayTagSettings.h"
 #include "Misc/CoreDelegates.h"
 
@@ -52,11 +53,6 @@ namespace OUUTags::Private
 			return false;
 		});
 	}
-
-#if WITH_EDITOR
-	OUUTAGS_API FString MakeFilterString(const FGameplayTagContainer& GameplayTags);
-#endif
-
 } // namespace OUUTags::Private
 
 // Forward declare the derived container types...
@@ -96,11 +92,20 @@ public:
 	/**
 	 * Get a list of the tags that are considered valid tag roots for this tag type.
 	 */
-	static ValueContainerType GetNativeTagRootTags()
+	static ReferenceContainerType GetNativeTagRootTags()
 	{
-		FGameplayTagContainer Result;
-		OUUTags::Private::GetAllTypedTagRootTags_Recursive<InRootLiteralTagTypes...>(OUT Result);
-		return ValueContainerType::CreateUnchecked(Result);
+		static FGameplayTagContainer Result;
+		static bool bHasValidCachedResult = false;
+		if (bHasValidCachedResult == false)
+		{
+			OUUTags::Private::GetAllTypedTagRootTags_Recursive<InRootLiteralTagTypes...>(OUT Result);
+
+			if (UTypedGameplayTagSettings::IsDoneAddingTags())
+			{
+				bHasValidCachedResult = true;
+			}
+		}
+		return ReferenceContainerType(Result, true);
 	}
 
 	template <typename CallableT>
@@ -110,14 +115,23 @@ public:
 			[&](const FGameplayTag& RootTag) { Callable(BlueprintTagType(RootTag)); });
 	}
 
-	static ValueContainerType GetAllRootTags()
+	static ReferenceContainerType GetAllRootTags()
 	{
-		FGameplayTagContainer Result;
-		// Native tags
-		OUUTags::Private::GetAllTypedTagRootTags_Recursive<InRootLiteralTagTypes...>(OUT Result);
-		// Plus additional tags from settings
-		UTypedGameplayTagSettings::GetAdditionalRootTags(OUT Result, BlueprintTagType::StaticStruct());
-		return ValueContainerType::CreateUnchecked(Result);
+		static FGameplayTagContainer Result;
+		static bool bHasValidCachedResult = false;
+		if (bHasValidCachedResult == false)
+		{
+			// Native tags
+			OUUTags::Private::GetAllTypedTagRootTags_Recursive<InRootLiteralTagTypes...>(OUT Result);
+			// Plus additional tags from settings
+			UTypedGameplayTagSettings::GetAdditionalRootTags(OUT Result, BlueprintTagType::StaticStruct());
+
+			if (UTypedGameplayTagSettings::IsDoneAddingTags())
+			{
+				bHasValidCachedResult = true;
+			}
+		}
+		return ReferenceContainerType(Result, true);
 	}
 
 	template <typename CallableT>
@@ -132,11 +146,20 @@ public:
 		return UTypedGameplayTagSettings::ForEachAdditionalRootTag(HandleRootTag, BlueprintTagType::StaticStruct());
 	}
 
-	static ValueContainerType GetAllLeafTags()
+	static ReferenceContainerType GetAllLeafTags()
 	{
-		FGameplayTagContainer Result;
-		UTypedGameplayTagSettings::GetAllLeafTags(OUT Result, BlueprintTagType::StaticStruct());
-		return ValueContainerType::CreateUnchecked(Result);
+		static FGameplayTagContainer Result;
+		static bool bHasValidCachedResult = false;
+		if (bHasValidCachedResult == false)
+		{
+			UTypedGameplayTagSettings::GetAllLeafTags(OUT Result, BlueprintTagType::StaticStruct());
+
+			if (UTypedGameplayTagSettings::IsDoneAddingTags())
+			{
+				bHasValidCachedResult = true;
+			}
+		}
+		return ReferenceContainerType(Result, true);
 	}
 
 	template <typename T, typename U, typename V>
@@ -161,12 +184,17 @@ public:
 
 	static BlueprintTagType TryConvert(FGameplayTag VanillaTag, bool bChecked)
 	{
-		ValueContainerType RootTags = GetAllRootTags();
+		if (VanillaTag.IsValid() == false)
+		{
+			return FGameplayTag::EmptyTag;
+		}
+
 		if (ForAllRootTags([&](const BlueprintTagType& RootTag) { return VanillaTag.MatchesTag(RootTag); }))
 		{
 			return BlueprintTagType(VanillaTag);
 		}
 
+#if DO_CHECK
 		if (VanillaTag.IsValid() && bChecked)
 		{
 			if (UGameplayTagsManager::Get().FindTagNode(VanillaTag))
@@ -175,7 +203,7 @@ public:
 					false,
 					TEXT("Tag %s is not part of the list of valid root tags %s."),
 					*VanillaTag.ToString(),
-					*RootTags.ToString());
+					*GetAllRootTags().ToString());
 			}
 			else
 			{
@@ -184,9 +212,10 @@ public:
 					Warning,
 					TEXT("Tag %s was deleted and thus is not part of the list of valid root tags %s."),
 					*VanillaTag.ToString(),
-					*RootTags.ToString());
+					*GetAllRootTags().ToString());
 			}
 		}
+#endif
 		return FGameplayTag::EmptyTag;
 	}
 };
@@ -245,13 +274,13 @@ public:                                                                         
 	}                                                                                                                  \
 	static TagType TryConvert(FGameplayTag FromTag) { return TypedTagImplType::TryConvert(FromTag, false); }           \
 	static TagType ConvertChecked(FGameplayTag FromTag) { return TypedTagImplType::TryConvert(FromTag, true); }        \
-	static TypedTagImplType::ValueContainerType GetAllRootTags() { return TypedTagImplType::GetAllRootTags(); }        \
+	static TypedTagImplType::ReferenceContainerType GetAllRootTags() { return TypedTagImplType::GetAllRootTags(); }    \
 	template <typename CallableT>                                                                                      \
 	static bool ForEachNativeRootTag(const CallableT& Callable)                                                        \
 	{                                                                                                                  \
 		return TypedTagImplType::ForEachNativeRootTag(Callable);                                                       \
 	}                                                                                                                  \
-	static TypedTagImplType::ValueContainerType GetAllLeafTags() { return TypedTagImplType::GetAllLeafTags(); }        \
+	static TypedTagImplType::ReferenceContainerType GetAllLeafTags() { return TypedTagImplType::GetAllLeafTags(); }    \
 	template <typename CallableT>                                                                                      \
 	static bool ForAllRootTags(const CallableT& Callable)                                                              \
 	{                                                                                                                  \
@@ -298,20 +327,6 @@ private:                                                                        
 			WithStructuredSerializeFromMismatchedTag = true,                                                           \
 			WithImportTextItem = true,                                                                                 \
 		};
-
-#if WITH_EDITOR
-	#define PRIVATE_TYPED_GAMEPLAY_TAG_EDITOR_IMPL(TagType)                                                            \
-		static void RegisterCustomProperyTypeLayout()                                                                  \
-		{                                                                                                              \
-			TypedTagImplType::RegisterPropertTypeLayout(PREPROCESSOR_TO_STRING(TagType));                              \
-		}                                                                                                              \
-		static void UnregisterCustomProperyTypeLayout()                                                                \
-		{                                                                                                              \
-			TypedTagImplType::UnregisterPropertTypeLayout(PREPROCESSOR_TO_STRING(TagType));                            \
-		}
-#else
-	#define PRIVATE_TYPED_GAMEPLAY_TAG_EDITOR_IMPL(TagName) PREPROCESSOR_NOTHING
-#endif
 
 #define DEFINE_TYPED_GAMEPLAY_TAG(TagType)                                                                             \
 	TagType::FAutoRegistrationHelper::FAutoRegistrationHelper()                                                        \
@@ -411,7 +426,7 @@ struct TTypedGameplayTagContainer_Base
 {
 public:
 	using BlueprintTagType = InBlueprintTagType;
-	using TypedTagImplType = typename BlueprintTagType::TypedTagImplType;
+	using TypedTagImplType = BlueprintTagType::TypedTagImplType;
 
 	using ValueContainerType = TTypedGameplayTagContainerValue<BlueprintTagType>;
 	using ReferenceContainerType = TTypedGameplayTagContainerReference<BlueprintTagType>;
@@ -552,6 +567,9 @@ struct TTypedGameplayTagContainerReference :
 	template <typename, typename>
 	friend struct TTypedGameplayTagContainer_Base;
 
+	template <typename, typename...>
+	friend struct TTypedGameplayTag;
+
 	using BlueprintTagType = InBlueprintTagType;
 	using SelfType = TTypedGameplayTagContainerReference<BlueprintTagType>;
 	using Super = TTypedGameplayTagContainer_Base<BlueprintTagType, SelfType>;
@@ -564,6 +582,15 @@ public:
 	};
 
 private:
+	TTypedGameplayTagContainerReference(FGameplayTagContainer& InGameplayTagContainerRef, const bool bAssumeValid) :
+		GameplayTagContainerRef(InGameplayTagContainerRef)
+	{
+		if (bAssumeValid == false)
+		{
+			Super::EnsureValidRootTag();
+		}
+	}
+
 	FGameplayTagContainer& GetRef_Impl() { return GameplayTagContainerRef; }
 	const FGameplayTagContainer& GetRef_Impl() const { return GameplayTagContainerRef; }
 

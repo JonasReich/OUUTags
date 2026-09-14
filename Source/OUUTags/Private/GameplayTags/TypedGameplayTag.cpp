@@ -2,6 +2,7 @@
 
 #include "GameplayTags/TypedGameplayTag.h"
 
+#include "GameplayTags/OUUTagsUtil.h"
 #include "GameplayTagsManager.h"
 #include "LogOUUTags.h"
 #include "Misc/EngineVersionComparison.h"
@@ -38,78 +39,62 @@ namespace OUUTags::Private
 			}
 		}
 	}
-
-	FString MakeFilterString(const FGameplayTagContainer& GameplayTags)
-	{
-		FString Result;
-		int i = 0;
-		for (auto& Tag : GameplayTags)
-		{
-			Result += Tag.ToString();
-			if (i < GameplayTags.Num() - 1)
-			{
-				Result += TEXT(",");
-			}
-			++i;
-		}
-		return Result;
-	}
 } // namespace OUUTags::Private
 
 void FTypedGameplayTag_Base::RegisterAllDerivedPropertyTypeLayouts()
 {
 	auto& TagsManager = UGameplayTagsManager::Get();
-	TagsManager.OnGetCategoriesMetaFromPropertyHandle.AddLambda([](const TSharedPtr<IPropertyHandle>& PropertyHandle,
-																   FString& OutFilterString)
-	{
-		auto* Property = PropertyHandle->GetProperty();
+	TagsManager.OnGetCategoriesMetaFromPropertyHandle.AddLambda(
+		[](const TSharedPtr<IPropertyHandle>& PropertyHandle, FString& OutFilterString) {
+			auto* Property = PropertyHandle->GetProperty();
 
-		if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
-		{
+			if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+			{
 	// only generate filter string for typed gameplay tags
 	#if UE_VERSION_OLDER_THAN(5, 3, 0)
-			const auto* Struct = StructProperty->Struct;
+				const auto* Struct = StructProperty->Struct;
 	#else
-			const auto* Struct = StructProperty->Struct.Get();
+				const auto* Struct = StructProperty->Struct.Get();
 	#endif
-			if (Struct->IsChildOf(FTypedGameplayTag_Base::StaticStruct()))
-			{
-				FGameplayTagContainer AllRootTags;
-				UTypedGameplayTagSettings::GetAllRootTags(OUT AllRootTags, Struct);
-				OutFilterString = OUUTags::Private::MakeFilterString(AllRootTags);
-				return;
-			}
-		}
-
-		const auto CategoriesString =
-			UGameplayTagsManager::Get().StaticGetCategoriesMetaFromPropertyHandle(PropertyHandle);
-
-		FRegexMatcher CategoriesMatcher {FRegexPattern(TEXT("TypedTag\\{(.*)\\}")), CategoriesString};
-		if (CategoriesMatcher.FindNext())
-		{
-			const auto TypedTagStructName =CategoriesMatcher.GetCaptureGroup(1);
-
-			for (const auto* Struct : TObjectRange<UScriptStruct>())
-			{
-				if (Struct->IsChildOf(FTypedGameplayTag_Base::StaticStruct())
-					&& Struct->GetName() == TypedTagStructName)
+				if (Struct->IsChildOf(FTypedGameplayTag_Base::StaticStruct()))
 				{
 					FGameplayTagContainer AllRootTags;
 					UTypedGameplayTagSettings::GetAllRootTags(OUT AllRootTags, Struct);
-					OutFilterString = OUUTags::Private::MakeFilterString(AllRootTags);
+					OutFilterString = OUUTags::Util::MakeFilterStringFromContainer(AllRootTags);
 					return;
 				}
 			}
 
-			UE_LOG(
-				LogOUUTags,
-				Error,
-				TEXT("Invalid struct name %s in Categories metadata (%s) for property %s"),
-				*TypedTagStructName,
-				*CategoriesString,
-				*Property->GetPathName());
-		}
-	});
+			const auto CategoriesString =
+				UGameplayTagsManager::Get().StaticGetCategoriesMetaFromPropertyHandle(PropertyHandle);
+
+			static FRegexPattern Pattern(TEXT("TypedTag\\{(.*)\\}"));
+			FRegexMatcher CategoriesMatcher{Pattern, CategoriesString};
+			if (CategoriesMatcher.FindNext())
+			{
+				const auto TypedTagStructName = CategoriesMatcher.GetCaptureGroup(1);
+
+				for (const auto* Struct : TObjectRange<UScriptStruct>())
+				{
+					if (Struct->IsChildOf(FTypedGameplayTag_Base::StaticStruct())
+						&& Struct->GetName() == TypedTagStructName)
+					{
+						FGameplayTagContainer AllRootTags;
+						UTypedGameplayTagSettings::GetAllRootTags(OUT AllRootTags, Struct);
+						OutFilterString = OUUTags::Util::MakeFilterStringFromContainer(AllRootTags);
+						return;
+					}
+				}
+
+				UE_LOG(
+					LogOUUTags,
+					Error,
+					TEXT("Invalid struct name %s in Categories metadata (%s) for property %s"),
+					*TypedTagStructName,
+					*CategoriesString,
+					*Property->GetPathName());
+			}
+		});
 
 	FPropertyEditorModule& PropertyEditorModule = OUUTags::Private::GetPropertyEditorModule();
 	OUUTags::Private::ForEachTypedGameplayTagType([&](FName TypeName) {

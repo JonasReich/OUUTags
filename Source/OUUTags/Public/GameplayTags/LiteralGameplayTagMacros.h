@@ -7,7 +7,7 @@
 
 #define OUU_DECLARE_GAMEPLAY_TAGS_START_IMPL(MODULE_API, TagType, RootTagName, Description, InFlags)                   \
 	struct TagType;                                                                                                    \
-	extern TagType TagType##_Instance;                                                                                 \
+	extern MODULE_API TagType TagType##_Instance;                                                                      \
 	struct MODULE_API TagType : public TLiteralGameplayTag<TagType, TagType, TagType>                                  \
 	{                                                                                                                  \
 		using EFlags = ELiteralGameplayTagFlags;                                                                       \
