@@ -50,12 +50,8 @@ void FTypedGameplayTag_Base::RegisterAllDerivedPropertyTypeLayouts()
 
 			if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
 			{
-	// only generate filter string for typed gameplay tags
-	#if UE_VERSION_OLDER_THAN(5, 3, 0)
-				const auto* Struct = StructProperty->Struct;
-	#else
+				// only generate filter string for typed gameplay tags
 				const auto* Struct = StructProperty->Struct.Get();
-	#endif
 				if (Struct->IsChildOf(FTypedGameplayTag_Base::StaticStruct()))
 				{
 					FGameplayTagContainer AllRootTags;
