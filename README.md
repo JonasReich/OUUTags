@@ -1,5 +1,9 @@
 # Open Unreal Utilities - Gameplay Tags
 
+![Open Unreal Utilities - Gameplay Tags logo](./Resources/ouu_wide.png)
+
+> Part of [Open Unreal Utilities](https://github.com/JonasReich/OpenUnrealUtilities), a family of Unreal Engine plugins and tools.
+
 Various extensions to [Gameplay Tags](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-gameplay-tags-in-unreal-engine?application_version=5.2) in Unreal Engine 5.
 
 - Literal Tags: Declare C++ structs instead of relying on string literals when using tags in source code
